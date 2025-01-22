@@ -9,9 +9,12 @@ import org.openjdk.jmh.annotations.*;
 
 import java.util.concurrent.TimeUnit;
 
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
-@State(Scope.Thread)
+@BenchmarkMode(Mode.AverageTime) // Default mode: Average time per operation
+@OutputTimeUnit(TimeUnit.MILLISECONDS) // Default time unit
+@State(Scope.Thread) // Each thread gets its own state instance
+@Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS) // Warm-up for JIT optimizations
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS) // Measurement phase
+@Fork(1) // Number of JVM forks
 public class MapperBenchmark {
 
     private final ReflectionMapper reflectionMapper = new ReflectionMapper();
