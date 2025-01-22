@@ -10,8 +10,6 @@
     </parent>
 
     <artifactId>lite-mapper</artifactId>
-    <properties>
-    </properties>
 
     <dependencies>
         <dependency>

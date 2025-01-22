@@ -40,4 +40,44 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <build>
+        <plugins>
+            <!-- JMH Plugin -->
+            <plugin>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-maven-plugin</artifactId>
+                <version>${jmh.maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-benchmark-sources</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Maven Shade Plugin for Executable JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>org.openjdk.jmh.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
