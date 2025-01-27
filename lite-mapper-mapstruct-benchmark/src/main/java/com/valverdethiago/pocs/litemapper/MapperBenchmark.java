@@ -1,6 +1,7 @@
 package com.valverdethiago.pocs.litemapper;
 
-import com.valverdethiago.pocs.litemapper.converters.ReflectionMapper;
+import com.valverdethiago.pocs.litemapper.converters.CachedReflectionConverter;
+import com.valverdethiago.pocs.litemapper.converters.ReflectionConverter;
 import com.valverdethiago.pocs.litemapper.example.Destination;
 import com.valverdethiago.pocs.litemapper.example.Source;
 import com.valverdethiago.pocs.litemapper.mapstruct.MapStructMapper;
@@ -12,12 +13,13 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime) // Default mode: Average time per operation
 @OutputTimeUnit(TimeUnit.MILLISECONDS) // Default time unit
 @State(Scope.Thread) // Each thread gets its own state instance
-@Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.SECONDS) // Warm-up for JIT optimizations
-@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS) // Measurement phase
+@Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS) // Warm-up for JIT optimizations
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.MILLISECONDS) // Measurement phase
 @Fork(1) // Number of JVM forks
 public class MapperBenchmark {
 
-    private final ReflectionMapper reflectionMapper = new ReflectionMapper();
+    private final ReflectionConverter<Source, Destination> reflectionConverter = new ReflectionConverter<>();
+    private final CachedReflectionConverter<Source, Destination> cachedReflectionConverter = new CachedReflectionConverter<>();
     private final MapStructMapper mapStructMapper = Mappers.getMapper(MapStructMapper.class);
 
     private Source source;
@@ -30,8 +32,13 @@ public class MapperBenchmark {
     }
 
     @Benchmark
+    public Destination benchmarkCachedReflectionMapper() {
+        return cachedReflectionConverter.convert(source, Destination.class);
+    }
+
+    @Benchmark
     public Destination benchmarkReflectionMapper() {
-        return (Destination) reflectionMapper.convert(source, Destination.class);
+        return reflectionConverter.convert(source, Destination.class);
     }
 
     @Benchmark

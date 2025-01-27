@@ -1,2 +1,3 @@
+com.valverdethiago.pocs.litemapper.MapperBenchmark.benchmarkCachedReflectionMapper
 com.valverdethiago.pocs.litemapper.MapperBenchmark.benchmarkReflectionMapper
 com.valverdethiago.pocs.litemapper.MapperBenchmark.benchmarkMapStruct

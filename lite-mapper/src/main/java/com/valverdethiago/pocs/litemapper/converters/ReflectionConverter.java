@@ -5,7 +5,7 @@ import com.valverdethiago.pocs.litemapper.registry.MapperRegistry;
 
 import java.lang.reflect.Field;
 
-public class ReflectionMapper<S, T> implements RuntimeConverter<S, T> {
+public class ReflectionConverter<S, T> implements RuntimeConverter<S, T> {
 
     @Override
     public T convert(S source, Class<T> targetClass) {
@@ -22,16 +22,7 @@ public class ReflectionMapper<S, T> implements RuntimeConverter<S, T> {
 
                     Object sourceValue = sourceField.get(source);
 
-                    // Check if a custom mapper exists for the source type
-                    var customMapper = MapperRegistry.getMapper(sourceField.getType());
-                    Object valueToSet = sourceValue;
-
-                    if (customMapper != null) {
-                        valueToSet = customMapper.map(sourceValue);
-                    } else if (!targetField.getType().isAssignableFrom(sourceField.getType())) {
-                        // Handle basic type conversion for common cases
-                        valueToSet = convertBasicTypes(sourceValue, targetField.getType());
-                    }
+                    Object valueToSet = convertValue(sourceField, sourceValue, targetField);
 
                     targetField.set(target, valueToSet);
                 }
@@ -42,7 +33,22 @@ public class ReflectionMapper<S, T> implements RuntimeConverter<S, T> {
         }
     }
 
-    private Object convertBasicTypes(Object sourceValue, Class<?> targetType) {
+    protected Object convertValue(Field sourceField, Object sourceValue, Field targetField) {
+
+        // Check if a custom mapper exists for the source type
+        var customMapper = MapperRegistry.getMapper(sourceField.getType());
+        Object valueToSet = sourceValue;
+
+        if (customMapper != null) {
+            valueToSet = customMapper.map(sourceValue);
+        } else if (!targetField.getType().isAssignableFrom(sourceField.getType())) {
+            // Handle basic type conversion for common cases
+            valueToSet = convertBasicTypes(sourceValue, targetField.getType());
+        }
+        return valueToSet;
+    }
+
+    protected Object convertBasicTypes(Object sourceValue, Class<?> targetType) {
         if (sourceValue == null) {
             return null;
         }
