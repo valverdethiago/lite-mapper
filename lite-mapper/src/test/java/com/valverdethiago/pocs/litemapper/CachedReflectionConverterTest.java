@@ -1,14 +1,14 @@
 package com.valverdethiago.pocs.litemapper;
 
-import com.valverdethiago.pocs.litemapper.converters.ReflectionMapper;
-import com.valverdethiago.pocs.litemapper.example.Source;
+import com.valverdethiago.pocs.litemapper.converters.CachedReflectionConverter;
+import com.valverdethiago.pocs.litemapper.converters.ReflectionConverter;
 import com.valverdethiago.pocs.litemapper.example.Destination;
-
+import com.valverdethiago.pocs.litemapper.example.Source;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ReflectionMapperTest {
+public class CachedReflectionConverterTest {
 
     @Test
     public void testMapping() {
@@ -16,8 +16,8 @@ public class ReflectionMapperTest {
         source.setName("John Doe");
         source.setAge("30");
 
-        ReflectionMapper mapper = new ReflectionMapper();
-        Destination destination = (Destination) mapper.convert(source, Destination.class);
+        Destination destination = new CachedReflectionConverter<Source, Destination>()
+                .convert(source, Destination.class);
 
         assertEquals("John Doe", destination.getDestinationName());
         assertEquals(30, destination.getAge());

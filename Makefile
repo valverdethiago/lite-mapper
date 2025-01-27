@@ -11,7 +11,7 @@ all: build run
 # Build the project
 .PHONY: build
 build:
-	$(MAVEN) clean package -pl $(MODULE_BENCHMARK)
+	$(MAVEN) clean package
 
 # Run the benchmark
 .PHONY: run
