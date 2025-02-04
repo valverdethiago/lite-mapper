@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime) // Default mode: Average time per operation
 @OutputTimeUnit(TimeUnit.MILLISECONDS) // Default time unit
-@State(Scope.Thread) // Each thread gets its own state instance
+@State(Scope.Benchmark)
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS) // Warm-up for JIT optimizations
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.MILLISECONDS) // Measurement phase
 @Fork(1) // Number of JVM forks
