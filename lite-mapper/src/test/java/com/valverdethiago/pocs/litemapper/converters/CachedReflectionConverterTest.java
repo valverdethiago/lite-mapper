@@ -1,7 +1,5 @@
-package com.valverdethiago.pocs.litemapper;
+package com.valverdethiago.pocs.litemapper.converters;
 
-import com.valverdethiago.pocs.litemapper.converters.CachedReflectionConverter;
-import com.valverdethiago.pocs.litemapper.converters.ReflectionConverter;
 import com.valverdethiago.pocs.litemapper.example.Destination;
 import com.valverdethiago.pocs.litemapper.example.Source;
 import org.junit.jupiter.api.Test;
