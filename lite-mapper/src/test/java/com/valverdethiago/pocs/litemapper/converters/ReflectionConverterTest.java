@@ -1,6 +1,5 @@
-package com.valverdethiago.pocs.litemapper;
+package com.valverdethiago.pocs.litemapper.converters;
 
-import com.valverdethiago.pocs.litemapper.converters.ReflectionConverter;
 import com.valverdethiago.pocs.litemapper.example.Source;
 import com.valverdethiago.pocs.litemapper.example.Destination;
 
@@ -16,8 +15,8 @@ public class ReflectionConverterTest {
         source.setName("John Doe");
         source.setAge("30");
 
-        ReflectionConverter converter = new ReflectionConverter();
-        Destination destination = (Destination) converter.convert(source, Destination.class);
+        ReflectionConverter<Source, Destination> converter = new ReflectionConverter<>();
+        Destination destination = converter.convert(source, Destination.class);
 
         assertEquals("John Doe", destination.getDestinationName());
         assertEquals(30, destination.getAge());
