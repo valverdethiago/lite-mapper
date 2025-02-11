@@ -49,27 +49,8 @@ public class JavassistClassGenerator implements ClassGenerator {
             convertMethod.setGenericSignature("(TS;Ljava/lang/Class<TD;>;)TD;");
             convertMethod.setModifiers(Modifier.PUBLIC);
 
+            StringBuilder methodBody = generateMethodBody(sourceClass, destinationClass);
 
-            // Create a mapping of source field names to destination field names based on @MapTo annotation
-            Map<String, String> fieldMappings = new HashMap<>();
-            Map<String, Class<?>> destinationFieldTypes = new HashMap<>();
-
-            for (Field destinationField : destinationClass.getDeclaredFields()) {
-                destinationFieldTypes.put(destinationField.getName(), destinationField.getType());
-            }
-
-            for (Field sourceField : sourceClass.getDeclaredFields()) {
-                MapTo annotation = sourceField.getAnnotation(MapTo.class);
-                if (annotation != null) {
-                    fieldMappings.put(sourceField.getName(), annotation.targetField());
-                } else {
-                    fieldMappings.put(sourceField.getName(), sourceField.getName());
-                }
-            }
-
-            StringBuilder methodBody = generateMethodBody(sourceClass, destinationClass, fieldMappings, destinationFieldTypes);
-
-            methodBody.append(" return target; }");
             convertMethod.setBody(methodBody.toString());
 
             generatedClass.addMethod(convertMethod);
@@ -88,34 +69,45 @@ public class JavassistClassGenerator implements ClassGenerator {
         }
     }
 
-    private static <S, D> StringBuilder generateMethodBody(Class<S> sourceClass, Class<D> destinationClass, Map<String, String> fieldMappings, Map<String, Class<?>> destinationFieldTypes) {
-        // Generate method body dynamically
+    private static <S, D> StringBuilder generateMethodBody(Class<S> sourceClass, Class<D> destinationClass) {
         StringBuilder methodBody = new StringBuilder();
         methodBody.append("{ if ($1 == null) return null; ");
         methodBody.append(sourceClass.getName()).append(" source = (").append(sourceClass.getName()).append(") $1; ");
         methodBody.append(destinationClass.getName()).append(" target = new ").append(destinationClass.getName()).append("(); ");
 
-        for (Map.Entry<String, String> entry : fieldMappings.entrySet()) {
-            String sourceFieldName = entry.getKey();
-            String destFieldName = entry.getValue();
+        for (Field sourceField : sourceClass.getDeclaredFields()) {
+            MapTo annotation = sourceField.getAnnotation(MapTo.class);
+            String sourceFieldName = sourceField.getName();
+            String destFieldName = (annotation != null) ? annotation.targetField() : sourceFieldName;
 
             String getterName = "get" + Character.toUpperCase(sourceFieldName.charAt(0)) + sourceFieldName.substring(1);
             String setterName = "set" + Character.toUpperCase(destFieldName.charAt(0)) + destFieldName.substring(1);
 
-            Class<?> destinationFieldType = destinationFieldTypes.get(destFieldName);
+            Class<?> destinationFieldType;
+            try {
+                destinationFieldType = destinationClass.getDeclaredField(destFieldName).getType();
+            } catch (NoSuchFieldException e) {
+                continue; // Skip if the field doesn't exist in the destination class
+            }
 
-            if (destinationFieldType != null) {
-                methodBody.append("target.").append(setterName).append("(")
-                        .append("( ").append(destinationFieldType.getName()).append(") ")
-                        .append("convertValue(")
-                        .append(sourceClass.getName()).append(".class.getDeclaredField(\"").append(sourceFieldName).append("\"), ")
-                        .append("source.").append(getterName).append("(), ")
-                        .append(destinationClass.getName()).append(".class.getDeclaredField(\"").append(destFieldName).append("\"))");
-                methodBody.append("); ");
+            // Handle Integer and int separately to prevent autoboxing issues
+            if (destinationFieldType == Integer.class) {
+                methodBody.append("target.").append(setterName)
+                        .append("(Integer.valueOf(source.").append(getterName).append("())); ");
+            } else if (destinationFieldType == int.class) {
+                methodBody.append("target.").append(setterName)
+                        .append("(Integer.parseInt(source.").append(getterName).append("())); ");
+            } else {
+                methodBody.append("target.").append(setterName)
+                        .append("(source.").append(getterName).append("()); ");
             }
         }
+
+        methodBody.append(" return target; }");
         return methodBody;
     }
+
+
 
     private static <S, D> String getClassname(Class<S> sourceClass, Class<D> destinationClass) {
         return sourceClass.getSimpleName() + "To" + destinationClass.getSimpleName() + "Mapper";
@@ -128,4 +120,5 @@ public class JavassistClassGenerator implements ClassGenerator {
             }
         }.defineClass();
     }
+
 }
