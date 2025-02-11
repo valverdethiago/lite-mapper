@@ -5,6 +5,7 @@ import com.valverdethiago.pocs.litemapper.converters.ReflectionConverter;
 import com.valverdethiago.pocs.litemapper.converters.RuntimeConverter;
 import com.valverdethiago.pocs.litemapper.example.Destination;
 import com.valverdethiago.pocs.litemapper.example.Source;
+import com.valverdethiago.pocs.litemapper.generators.ASMClassGenerator;
 import com.valverdethiago.pocs.litemapper.generators.JavassistClassGenerator;
 import com.valverdethiago.pocs.litemapper.mapstruct.MapStructMapper;
 import org.mapstruct.factory.Mappers;
@@ -24,6 +25,8 @@ public class MapperBenchmark {
     private final CachedReflectionConverter<Source, Destination> cachedReflectionConverter = new CachedReflectionConverter<>();
     private final MapStructMapper mapStructMapper = Mappers.getMapper(MapStructMapper.class);
     private final RuntimeConverter<Source, Destination> javassistConverter = new JavassistClassGenerator()
+            .generateMapperClass(Source.class, Destination.class);
+    private final RuntimeConverter<Source, Destination> asmConverter = new ASMClassGenerator()
             .generateMapperClass(Source.class, Destination.class);
 
     private Source source;
@@ -53,5 +56,10 @@ public class MapperBenchmark {
     @Benchmark
     public Destination benchmarkJavassist() {
         return javassistConverter.convert(source, Destination.class);
+    }
+
+    @Benchmark
+    public Destination benchmarkAsm() {
+        return asmConverter.convert(source, Destination.class);
     }
 }
