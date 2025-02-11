@@ -23,5 +23,6 @@
         <jmh.maven-plugin.version>0.5.2</jmh.maven-plugin.version>
         <lombok.version>1.18.36</lombok.version>
         <javassist.version>3.27.0-GA</javassist.version>
+        <asm.version>9.6</asm.version>
     </properties>
 </project>

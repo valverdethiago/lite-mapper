@@ -1,11 +1,11 @@
 package com.valverdethiago.pocs.litemapper;
 
 import com.valverdethiago.pocs.litemapper.converters.CachedReflectionConverter;
-import com.valverdethiago.pocs.litemapper.converters.CustomMapper;
 import com.valverdethiago.pocs.litemapper.converters.ReflectionConverter;
 import com.valverdethiago.pocs.litemapper.converters.RuntimeConverter;
 import com.valverdethiago.pocs.litemapper.example.Destination;
 import com.valverdethiago.pocs.litemapper.example.Source;
+import com.valverdethiago.pocs.litemapper.generators.ASMClassGenerator;
 import com.valverdethiago.pocs.litemapper.generators.JavassistClassGenerator;
 import com.valverdethiago.pocs.litemapper.mapstruct.MapStructMapper;
 import org.mapstruct.factory.Mappers;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime) // Default mode: Average time per operation
 @OutputTimeUnit(TimeUnit.MILLISECONDS) // Default time unit
-@State(Scope.Benchmark)
+@State(Scope.Thread)
 @Warmup(iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS) // Warm-up for JIT optimizations
 @Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.MILLISECONDS) // Measurement phase
 @Fork(1) // Number of JVM forks
@@ -25,6 +25,8 @@ public class MapperBenchmark {
     private final CachedReflectionConverter<Source, Destination> cachedReflectionConverter = new CachedReflectionConverter<>();
     private final MapStructMapper mapStructMapper = Mappers.getMapper(MapStructMapper.class);
     private final RuntimeConverter<Source, Destination> javassistConverter = new JavassistClassGenerator()
+            .generateMapperClass(Source.class, Destination.class);
+    private final RuntimeConverter<Source, Destination> asmConverter = new ASMClassGenerator()
             .generateMapperClass(Source.class, Destination.class);
 
     private Source source;
@@ -54,5 +56,10 @@ public class MapperBenchmark {
     @Benchmark
     public Destination benchmarkJavassist() {
         return javassistConverter.convert(source, Destination.class);
+    }
+
+    @Benchmark
+    public Destination benchmarkAsm() {
+        return asmConverter.convert(source, Destination.class);
     }
 }
